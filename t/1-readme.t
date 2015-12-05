@@ -1,4 +1,5 @@
 use v6;
+use lib './lib';
 use Digest::MD5;
 use Test;
 
