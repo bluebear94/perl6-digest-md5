@@ -3,17 +3,17 @@
 #
 
 class Digest::MD5:auth<cosimo>:ver<0.05> {
-    my \mask = 2 ** 32 - 1;
+    constant \mask = 2 ** 32 - 1;
     sub prefix:<¬>(int \x) returns int       {   +^ x }
     sub infix:<⊞>(int \x, int \y) returns int    {  (x + y) +& mask }
     sub infix:«<<<»(int \x, int \n) returns int  { (x +< n) +| (x +> (32-n)) }
 
-    my \FGHI = -> \X, \Y, \Z { (X +& Y) +| (+^ X +& Z) },
+    constant \FGHI = -> \X, \Y, \Z { (X +& Y) +| (+^ X +& Z) },
                -> \X, \Y, \Z { (X +& Z) +| (Y +& +^ Z) },
                -> \X, \Y, \Z { X +^ Y +^ Z           },
                -> \X, \Y, \Z { Y +^ (X +| +^ Z)        };
 
-    my \S = (
+    constant \S = (
             (7, 12, 17, 22) xx 4,
             (5,  9, 14, 20) xx 4,
             (4, 11, 16, 23) xx 4,
@@ -21,9 +21,9 @@ class Digest::MD5:auth<cosimo>:ver<0.05> {
         ).flat;
 
 
-    my \T = (floor(abs(sin($_ + 1)) * 2**32) for ^64).flat;
+    constant \T = (floor(abs(sin($_ + 1)) * 2**32) for ^64).flat;
 
-    my \k = (
+    constant \k = (
             (   $_           for ^16),
             ((5*$_ + 1) % 16 for ^16),
             ((3*$_ + 5) % 16 for ^16),
@@ -49,7 +49,7 @@ class Digest::MD5:auth<cosimo>:ver<0.05> {
             $A = $D;
             $D = $C;
             $C = $B;
-            $B = $B ⊞ (($oldA ⊞ f ⊞ T[$i] ⊞ @X[k[$i] + $start]) <<< S[$i]);
+            $B = $B ⊞ ((($oldA + f + T[$i] + @X[k[$i] + $start]) +& mask) <<< S[$i]);
         }
         @H «⊞=» ($A, $B, $C, $D);
     }
